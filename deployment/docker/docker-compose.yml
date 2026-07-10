@@ -1,0 +1,189 @@
+version: '3.9'
+
+services:
+
+  ########################################################
+  # PostgreSQL
+  ########################################################
+
+  postgres:
+
+    image: postgres:16
+
+    container_name: postgres
+
+    restart: always
+
+    environment:
+      POSTGRES_DB: resilisys
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: admin
+
+    ports:
+      - "5432:5432"
+
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+    networks:
+      - resilisys-network
+
+
+  ########################################################
+  # AI Predictor
+  ########################################################
+
+  ai-predictor:
+
+    build:
+      context: ../../ai-predictor
+
+    container_name: ai-predictor
+
+    ports:
+      - "8000:8000"
+
+    depends_on:
+      - postgres
+
+    networks:
+      - resilisys-network
+
+
+  ########################################################
+  # Service Monitor
+  ########################################################
+
+  service-monitor:
+
+    build:
+      context: ../../backend/service-monitor
+
+    container_name: service-monitor
+
+    ports:
+      - "8081:8081"
+
+    depends_on:
+      - postgres
+
+    networks:
+      - resilisys-network
+
+
+  ########################################################
+  # Failure Injector
+  ########################################################
+
+  failure-injector:
+
+    build:
+      context: ../../backend/failure-injector
+
+    container_name: failure-injector
+
+    ports:
+      - "8082:8082"
+
+    networks:
+      - resilisys-network
+
+
+  ########################################################
+  # Recovery Engine
+  ########################################################
+
+  recovery-engine:
+
+    build:
+      context: ../../backend/recovery-engine
+
+    container_name: recovery-engine
+
+    ports:
+      - "8083:8083"
+
+    depends_on:
+      - postgres
+
+    networks:
+      - resilisys-network
+
+
+  ########################################################
+  # Metrics Collector
+  ########################################################
+
+  metrics-collector:
+
+    build:
+      context: ../../backend/metrics-collector
+
+    container_name: metrics-collector
+
+    ports:
+      - "8084:8084"
+
+    depends_on:
+      - postgres
+      - ai-predictor
+
+    networks:
+      - resilisys-network
+
+
+  ########################################################
+  # API Gateway
+  ########################################################
+
+  api-gateway:
+
+    build:
+      context: ../../backend/api-gateway
+
+    container_name: api-gateway
+
+    ports:
+      - "8080:8080"
+
+    depends_on:
+      - service-monitor
+      - failure-injector
+      - recovery-engine
+      - metrics-collector
+
+    networks:
+      - resilisys-network
+
+
+  ########################################################
+  # React Frontend
+  ########################################################
+
+  frontend:
+
+    build:
+      context: ../../frontend
+
+    container_name: frontend
+
+    ports:
+      - "5173:5173"
+
+    depends_on:
+      - api-gateway
+
+    networks:
+      - resilisys-network
+
+
+volumes:
+
+  postgres_data:
+
+
+networks:
+
+  resilisys-network:
+
+    driver: bridge
