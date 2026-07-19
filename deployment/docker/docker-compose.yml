@@ -197,9 +197,35 @@ services:
     networks:
       - resilisys-network  
 
+  ########################################################
+  # Grafana
+  ########################################################
+
+  grafana:
+
+    image: grafana/grafana:latest
+
+    container_name: grafana
+
+    restart: always
+
+    ports:
+      - "3001:3000"
+
+    depends_on:
+      - prometheus
+
+    volumes:
+      - grafana_data:/var/lib/grafana
+
+    networks:
+      - resilisys-network
+
 volumes:
 
   postgres_data:
+
+  grafana_data:
 
 
 networks:
