@@ -1,0 +1,29 @@
+global:
+  scrape_interval: 15s
+
+scrape_configs:
+
+  - job_name: 'api-gateway'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['api-gateway:8080']
+
+  - job_name: 'service-monitor'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['service-monitor:8081']
+
+  - job_name: 'failure-injector'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['failure-injector:8082']
+
+  - job_name: 'recovery-engine'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['recovery-engine:8083']
+
+  - job_name: 'metrics-collector'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['metrics-collector:8084']
